@@ -35,9 +35,6 @@ export class CreateActivityLogDto {
 
 export class ActivityLogQueryDto {
   @IsUUID()
-  projectId: string;
-
-  @IsUUID()
   @IsOptional()
   taskId?: string;
 
