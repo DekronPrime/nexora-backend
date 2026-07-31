@@ -11,7 +11,12 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 export class UserController {
   constructor(private readonly userService: UserService) { }
 
-  @Patch('/password')
+  @Patch('/profile/update')
+  updateProfile(@CurrentUser() user: User, @Body() dto: UpdateUserDto) {
+    return this.userService.update(user.id, dto);
+  }
+
+  @Patch('/password/update')
   changePassword(@CurrentUser() user: User, @Body() dto: ChangePasswordDto) {
     return this.userService.changePassword(user.id, dto);
   }
