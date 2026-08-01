@@ -7,6 +7,7 @@ import { TasksModule } from './tasks/tasks.module';
 import { MembersModule } from './members/members.module';
 import { ActivityLogModule } from './activity-log/activity-log.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     MembersModule,
     ActivityLogModule,
     NotificationsModule,
+    UserModule,
   ],
 })
 export class AppModule { }
