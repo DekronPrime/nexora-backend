@@ -16,13 +16,14 @@ import { ProjectsService } from './projects.service';
 import { CreateProjectDto, UpdateProjectDto, ProjectQueryDto } from './dto/create-project.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { ProjectResponseDto } from './dto/project-response.dto';
 
 @ApiTags('projects')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('projects')
 export class ProjectsController {
-  constructor(private readonly projectsService: ProjectsService) {}
+  constructor(private readonly projectsService: ProjectsService) { }
 
   @Post()
   @ApiOperation({ summary: 'Create a new project' })
@@ -42,7 +43,7 @@ export class ProjectsController {
   async findAll(
     @CurrentUser('id') userId: string,
     @Query() query: ProjectQueryDto,
-  ) {
+  ): Promise<ProjectResponseDto[]> {
     return this.projectsService.findAll(userId, query);
   }
 
