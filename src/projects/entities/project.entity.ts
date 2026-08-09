@@ -9,6 +9,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { User } from '../../auth/entities/user.entity';
+import { Task } from '../../tasks/entities/task.entity';
 
 export type MemberRole = 'owner' | 'member';
 
@@ -38,6 +39,9 @@ export class Project {
 
   @OneToMany(() => ProjectMember, (member) => member.project, { eager: false })
   members: ProjectMember[];
+
+  @OneToMany(() => Task, (task) => task.project, { eager: false })
+  tasks: Task[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

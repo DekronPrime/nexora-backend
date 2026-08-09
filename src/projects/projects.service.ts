@@ -5,8 +5,10 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
+import { plainToInstance } from 'class-transformer';
 import { Project, ProjectMember } from './entities/project.entity';
 import { CreateProjectDto, UpdateProjectDto, ProjectQueryDto } from './dto/create-project.dto';
+import { ProjectResponseDto } from './dto/project-response.dto';
 import { ActivityLogService } from '../activity-log/activity-log.service';
 
 @Injectable()
@@ -17,12 +19,12 @@ export class ProjectsService {
     @InjectRepository(ProjectMember)
     private readonly projectMemberRepository: Repository<ProjectMember>,
     private readonly activityLogService: ActivityLogService,
-  ) {}
+  ) { }
 
   async create(
     createProjectDto: CreateProjectDto,
     userId: string,
-  ): Promise<Project> {
+  ): Promise<ProjectResponseDto> {
     const project = this.projectRepository.create({
       ...createProjectDto,
       ownerId: userId,
@@ -50,25 +52,28 @@ export class ProjectsService {
     return this.findOne(savedProject.id, userId);
   }
 
-  async findAll(userId: string, query?: ProjectQueryDto): Promise<Project[]> {
+  async findAll(userId: string, query?: ProjectQueryDto): Promise<ProjectResponseDto[]> {
     const projects = await this.projectRepository
       .createQueryBuilder('project')
       .leftJoinAndSelect('project.owner', 'owner')
+      .leftJoinAndSelect('project.members', 'members')
+      .leftJoinAndSelect('members.user', 'memberUser')
       .leftJoin(
         'project_members',
-        'member',
-        'member.project_id = project.id AND member.user_id = :userId',
+        'userMembership',
+        'userMembership.project_id = project.id AND userMembership.user_id = :userId',
         { userId },
       )
-      .where('project.ownerId = :userId OR member.id IS NOT NULL', { userId })
+      .loadRelationCountAndMap('project.taskCount', 'project.tasks')
+      .where('project.ownerId = :userId OR userMembership.id IS NOT NULL', { userId })
       .andWhere(query?.ownerId ? 'project.ownerId = :ownerId' : '1=1', { ownerId: query?.ownerId })
       .orderBy('project.createdAt', 'DESC')
       .getMany();
 
-    return projects;
+    return plainToInstance(ProjectResponseDto, projects, { excludeExtraneousValues: false });
   }
 
-  async findOne(id: string, userId: string): Promise<Project> {
+  async findOne(id: string, userId: string): Promise<ProjectResponseDto> {
     const project = await this.projectRepository
       .createQueryBuilder('project')
       .leftJoinAndSelect('project.owner', 'owner')
@@ -81,14 +86,14 @@ export class ProjectsService {
       throw new NotFoundException('Project not found');
     }
 
-    return project;
+    return plainToInstance(ProjectResponseDto, project, { excludeExtraneousValues: false });
   }
 
   async update(
     id: string,
     updateProjectDto: UpdateProjectDto,
     userId: string,
-  ): Promise<Project> {
+  ): Promise<ProjectResponseDto> {
     const project = await this.projectRepository.findOne({
       where: { id },
       relations: { owner: true },
