@@ -56,7 +56,12 @@ export class ProjectsService {
     const projects = await this.projectRepository
       .createQueryBuilder('project')
       .leftJoinAndSelect('project.owner', 'owner')
-      .leftJoinAndSelect('project.members', 'members')
+      .leftJoinAndSelect(
+        'project.members',
+        'members',
+        'members.role != :ownerRole',
+        { ownerRole: 'owner' }
+      )
       .leftJoinAndSelect('members.user', 'memberUser')
       .leftJoin(
         'project_members',
@@ -65,6 +70,12 @@ export class ProjectsService {
         { userId },
       )
       .loadRelationCountAndMap('project.taskCount', 'project.tasks')
+      .loadRelationCountAndMap(
+        'project.completedTaskCount',
+        'project.tasks',
+        'completedTask',
+        (qb) => qb.andWhere('completedTask.status = :status', { status: 'done' })
+      )
       .where('project.ownerId = :userId OR userMembership.id IS NOT NULL', { userId })
       .andWhere(query?.ownerId ? 'project.ownerId = :ownerId' : '1=1', { ownerId: query?.ownerId })
       .orderBy('project.createdAt', 'DESC')
