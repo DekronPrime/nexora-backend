@@ -7,6 +7,9 @@ export class ProjectMemberUserDto {
     @Expose()
     fullName: string;
 
+    @Exclude()
+    email: string;
+
     @Expose()
     avatarUrl: string | null;
 
@@ -15,6 +18,12 @@ export class ProjectMemberUserDto {
 
     @Exclude()
     passwordHash?: string;
+
+    @Exclude()
+    createdAt: Date;
+
+    @Exclude()
+    updatedAt: Date;
 }
 
 export class ProjectMemberDto {
@@ -34,17 +43,24 @@ export class ProjectMemberDto {
 
 export class ProjectOwnerDto {
     id: string;
-    email: string;
     fullName: string;
+
+    @Exclude()
+    email: string;
+
     avatarUrl: string | null;
-    createdAt: Date;
-    updatedAt: Date;
 
     @Exclude()
     isVerified?: boolean;
 
     @Exclude()
     passwordHash?: string;
+
+    @Exclude()
+    createdAt: Date;
+
+    @Exclude()
+    updatedAt: Date;
 }
 
 export class ProjectResponseDto {
@@ -57,6 +73,7 @@ export class ProjectResponseDto {
     @Exclude()
     ownerId: string;
     taskCount: number;
+    completedTaskCount: number;
     createdAt: Date;
     updatedAt: Date;
 
